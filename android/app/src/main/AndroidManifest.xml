@@ -12,7 +12,7 @@
   <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
   <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
     <application
-        android:label="myapp"
+        android:label="Auto Volume Player"
         android:name="${applicationName}"
         android:requestLegacyExternalStorage="true"
         android:icon="@mipmap/ic_launcher">
