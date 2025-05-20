@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:myapp/src/bloc/events/music_event.dart';
 import 'package:myapp/src/bloc/states/music_state.dart';
 import 'package:myapp/src/services/storage_service.dart';
+import 'package:noise_meter/noise_meter.dart';
 import 'package:rxdart/rxdart.dart';
 
 class StorageBloc extends Bloc<StrorageEvent, SongLoadState> {
@@ -13,7 +17,9 @@ class StorageBloc extends Bloc<StrorageEvent, SongLoadState> {
   }
 
   Future<void> _onFetchMusic(
-      FetchMusic event, Emitter<SongLoadState> emit) async {
+    FetchMusic event,
+    Emitter<SongLoadState> emit,
+  ) async {
     emit(MusicLoading());
     try {
       final audioFiles = await storageService.fetchAudioFiles();
@@ -27,6 +33,32 @@ class StorageBloc extends Bloc<StrorageEvent, SongLoadState> {
 
 class MusicBloc extends Bloc<MusicEvent, MusicState> {
   final AudioPlayer _audioPlayer = AudioPlayer();
+  static const MethodChannel _channel = MethodChannel(
+    'com.example.myapp/audio',
+  );
+  final NoiseMeter _noiseMeter = NoiseMeter();
+
+  double _volume = 0.5;
+  double _noiseLevel = 0;
+  double _autoVolumeThreshold = 0.5;
+  List<double> _noiseData = [];
+  StreamSubscription<NoiseReading>? _noiseSubscription;
+
+  //public getters
+  double get currentNoiseLevel => _noiseLevel;
+  List<double> get noiseData => _noiseData;
+  double get currentVolume => _volume;
+  double get currentThreshold => _autoVolumeThreshold;
+
+  //public setters
+  set autoVolumeThreshold(double value) {
+    _autoVolumeThreshold = value;
+    _adjustVolume();
+  }
+
+  set volume(double value) => _setSystemVolume(value);
+
+  void startNoiseMonitoring() => _startNoiseMonitoring();
 
   MusicBloc() : super(MusicStopped()) {
     on<PlayMusic>(_onPlayMusic);
@@ -35,19 +67,20 @@ class MusicBloc extends Bloc<MusicEvent, MusicState> {
     on<StopMusic>(_onStopMusic);
     on<SeekMusic>(_onSeekMusic);
 
+    _fetchSystemVolume();
+    _startNoiseMonitoring();
+
     // Listen to position changes (debounced)
     _audioPlayer.onPositionChanged
         .debounceTime(const Duration(milliseconds: 500))
         .listen((position) {
-      if (state is MusicPlaying) {
-        final currentState = state as MusicPlaying;
-        _emitStateIfChanged(MusicPlaying(
-          currentState.song,
-          position,
-          currentState.isPlaying,
-        ));
-      }
-    });
+          if (state is MusicPlaying) {
+            final currentState = state as MusicPlaying;
+            _emitStateIfChanged(
+              MusicPlaying(currentState.song, position, currentState.isPlaying),
+            );
+          }
+        });
 
     // Listen to player state changes
     _audioPlayer.onPlayerStateChanged.listen((playerState) {
@@ -84,7 +117,9 @@ class MusicBloc extends Bloc<MusicEvent, MusicState> {
   }
 
   Future<void> _onResumeMusic(
-      ResumeMusic event, Emitter<MusicState> emit) async {
+    ResumeMusic event,
+    Emitter<MusicState> emit,
+  ) async {
     if (state is MusicPaused) {
       final currentState = state as MusicPaused;
       await _audioPlayer.seek(currentState.position);
@@ -103,11 +138,9 @@ class MusicBloc extends Bloc<MusicEvent, MusicState> {
     if (state is MusicPlaying) {
       await _audioPlayer.seek(event.position);
       final currentState = state as MusicPlaying;
-      _emitStateIfChanged(MusicPlaying(
-        currentState.song,
-        event.position,
-        currentState.isPlaying,
-      ));
+      _emitStateIfChanged(
+        MusicPlaying(currentState.song, event.position, currentState.isPlaying),
+      );
     }
   }
 
@@ -116,9 +149,52 @@ class MusicBloc extends Bloc<MusicEvent, MusicState> {
     emit(newState);
   }
 
+  Future<void> _fetchSystemVolume() async {
+    try {
+      final double volume = await _channel.invokeMethod('getCurrentVolume');
+
+      _volume = volume;
+    } catch (e) {
+      print("Error fetching system volume: $e");
+    }
+  }
+
+  /// Set system volume
+  Future<void> _setSystemVolume(double value) async {
+    try {
+      await _channel.invokeMethod('setVolume', value);
+
+      _volume = value;
+    } catch (e) {
+      print("Error setting system volume: $e");
+    }
+  }
+
+  void _startNoiseMonitoring() {
+    _noiseSubscription = _noiseMeter.noise.listen((noiseReading) {
+      _noiseLevel = noiseReading.meanDecibel;
+      _noiseData.add(_noiseLevel);
+      if (_noiseData.length > 50) {
+        _noiseData.removeAt(0);
+      }
+    });
+    _adjustVolume();
+  }
+
+  void _stopNoiseMonitoring() {
+    _noiseSubscription?.cancel();
+    _noiseSubscription = null;
+  }
+
+  void _adjustVolume() {
+    final adjustedVolume = (_noiseLevel / 100) * _autoVolumeThreshold;
+    _setSystemVolume(adjustedVolume.clamp(0.0, 1.0));
+  }
+
   @override
   Future<void> close() {
     _audioPlayer.dispose();
+    _stopNoiseMonitoring();
     return super.close();
   }
 }

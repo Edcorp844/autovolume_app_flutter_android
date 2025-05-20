@@ -43,26 +43,21 @@ class _TabControllerState extends State<TabController> {
           ),
           NavigationDestination(
             selectedIcon: Badge(
-                child: Icon(
-              Icons.settings,
-              color: context.isDark ? Colors.black : Colors.white,
-            )),
+              child: Icon(
+                Icons.settings,
+                color: context.isDark ? Colors.black : Colors.white,
+              ),
+            ),
             icon: const Badge(child: Icon(Icons.settings_outlined)),
             label: 'Settings',
           ),
           NavigationDestination(
-            icon: const Badge(
-              label: Text('2'),
-              child: Icon(Icons.person_outline_rounded),
+            icon: const Icon(Icons.more_outlined),
+            selectedIcon: Icon(
+              Icons.more_rounded,
+              color: context.isDark ? Colors.black : Colors.white,
             ),
-            selectedIcon: Badge(
-              label: const Text('2'),
-              child: Icon(
-                Icons.person_rounded,
-                color: context.isDark ? Colors.black : Colors.white,
-              ),
-            ),
-            label: 'Profile',
+            label: 'About',
           ),
         ],
       ),
@@ -73,9 +68,11 @@ class _TabControllerState extends State<TabController> {
             const SettingsTab(),
             const ProfileTab(),
           ][currentPageIndex],
-          BlocBuilder<MusicBloc, MusicState>(builder: (context, state) {
-            return buildPlayerController(state);
-          }),
+          BlocBuilder<MusicBloc, MusicState>(
+            builder: (context, state) {
+              return buildPlayerController(state);
+            },
+          ),
         ],
       ),
     );
@@ -91,28 +88,30 @@ class _TabControllerState extends State<TabController> {
         left: 0,
         right: 0,
         child: Container(
-          decoration: BoxDecoration(boxShadow: [
-            BoxShadow(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
                 color: Colors.black.withOpacity(0.3),
                 blurRadius: 3,
-                offset: const Offset(0, -3))
-          ]),
+                offset: const Offset(0, -3),
+              ),
+            ],
+          ),
           child: ClipRRect(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                color: Colors.black
-                    .withOpacity(0.7), // Semi-transparent background
+                color: Colors.black.withOpacity(
+                  0.7,
+                ), // Semi-transparent background
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: Text(
                         currentSong.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
+                        style: const TextStyle(color: Colors.white),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -127,11 +126,19 @@ class _TabControllerState extends State<TabController> {
                       ),
                       onPressed: () {
                         if (state is MusicPlaying) {
-                          context.read<MusicBloc>().add(PauseMusic(
-                              song: state.song, position: state.position));
+                          context.read<MusicBloc>().add(
+                            PauseMusic(
+                              song: state.song,
+                              position: state.position,
+                            ),
+                          );
                         } else if (state is MusicPaused) {
-                          context.read<MusicBloc>().add(ResumeMusic(
-                              song: state.song, position: state.position));
+                          context.read<MusicBloc>().add(
+                            ResumeMusic(
+                              song: state.song,
+                              position: state.position,
+                            ),
+                          );
                         }
                       },
                     ),

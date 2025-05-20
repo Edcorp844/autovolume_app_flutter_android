@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/src/extensions/build_context_extension.dart';
 
@@ -13,70 +12,100 @@ class ProfileTab extends StatelessWidget {
           SliverAppBar.large(
             centerTitle: true,
             stretch: true,
-            title: Text(
-              'Profile',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            title: Text('About', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
           SliverToBoxAdapter(
-              child: /* Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Card(
-                      child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(),
-                        Text('Name'),
-                        Text(
-                          'Agaba Derick',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 10),
-                        Text('Email'),
-                        Text(
-                          'agabaderrick981@gmail.com',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 10),
-                        Text('Gender'),
-                        Text(
-                          'Male',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
+            child: Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: 16,
+                    height: 1.5,
+                    fontFamily: 'Roboto',
+                    color: context.textColor
+                  ),
+                  children: [
+                    TextSpan(
+                      text: 'Auto Volume\n',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueAccent,
+                      ),
                     ),
-                  )),
-                ],
-              ), */
-                  CupertinoListSection.insetGrouped(
-            backgroundColor: context.backgroundColor!,
-            children: [
-              CupertinoListTile.notched(
-                title: Text(
-                  'Name',
-                  style: TextStyle(color: context.textColor),
+                    TextSpan(
+                      text:
+                          'Adjusts your media volume based on ambient noise levels for an optimal listening experience.\n\n',
+                    ),
+                    TextSpan(
+                      text: 'How It Works:\n',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueAccent.shade700,
+                      ),
+                    ),
+                    TextSpan(text: '• '),
+                    TextSpan(
+                      text: 'Enable Auto Volume',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    TextSpan(text: ' – Turn on the feature in settings.\n'),
+                    TextSpan(text: '• '),
+                    TextSpan(
+                      text: 'Adjust Sensitivity',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    TextSpan(
+                      text: ' – Set the threshold for volume adjustments.\n',
+                    ),
+                    TextSpan(text: '• '),
+                    TextSpan(
+                      text: 'Play Music',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    TextSpan(
+                      text:
+                          ' – The app automatically adapts volume to your environment.\n\n',
+                    ),
+                    TextSpan(
+                      text: 'Tips:\n',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueAccent.shade700,
+                      ),
+                    ),
+                    TextSpan(text: '• '),
+                    TextSpan(
+                      text:
+                          'Works best in dynamic sound environments (e.g., cafes, traffic).\n',
+                    ),
+                    TextSpan(text: '• '),
+                    TextSpan(
+                      text:
+                          'Manual override available anytime via the volume slider.\n\n',
+                    ),
+                    TextSpan(
+                      text:
+                          'Enjoy seamless audio, no matter where you are!\n\n',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                    TextSpan(
+                      text: '— The Auto Volume Team',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
                 ),
-                subtitle: const Text('Agaba Derick'),
               ),
-              CupertinoListTile.notched(
-                title: Text(
-                  'Email',
-                  style: TextStyle(color: context.textColor),
-                ),
-                subtitle: const Text('agabaderrick981@gmail.com'),
-              ),
-              CupertinoListTile.notched(
-                title: Text(
-                  'Gender',
-                  style: TextStyle(color: context.textColor),
-                ),
-                subtitle: const Text('Male'),
-              ),
-            ],
-          )),
+            ),
+          ),
         ],
       ),
     );
