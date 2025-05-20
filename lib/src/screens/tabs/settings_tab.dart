@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:myapp/src/bloc/music_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:myapp/src/bloc/states/music_state.dart';
-import 'package:myapp/src/widgets/knob.dart';
-import 'package:myapp/src/widgets/senstivity_knob.dart';
+import 'package:myapp/src/screens/widgets/knob.dart';
+import 'package:myapp/src/screens/widgets/senstivity_knob.dart';
 
 class SettingsTab extends StatefulWidget {
   const SettingsTab({super.key});
@@ -56,68 +56,73 @@ class _SettingsTabState extends State<SettingsTab> {
                           border: Border.all(color: Colors.grey),
                           borderRadius: BorderRadius.circular(5),
                         ),
-                        child: LineChart(
-                          LineChartData(
-                            gridData: const FlGridData(show: false),
-                            titlesData: const FlTitlesData(show: false),
-                            borderData: FlBorderData(show: false),
-                            minX: 0,
-                            maxX: musicBloc.noiseData.length.toDouble(),
-                            minY: 0,
-                            maxY: 100,
-                            lineBarsData: [
-                              LineChartBarData(
-                                spots:
-                                    musicBloc.noiseData.asMap().entries.map((
-                                      entry,
-                                    ) {
-                                      return FlSpot(
-                                        entry.key.toDouble(),
-                                        entry.value,
-                                      );
-                                    }).toList(),
-                                isCurved: true,
-                                gradient: LinearGradient(
-                                  colors: [Colors.blue, Colors.green],
-                                ),
-                                barWidth: 3,
-                                dotData: const FlDotData(show: false),
-                                isStrokeCapRound: true,
-                                belowBarData: BarAreaData(
-                                  show: true,
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.green.withOpacity(0.2),
-                                      Colors.blue.withOpacity(0.1),
-                                    ],
+                        child: StreamBuilder<double>(
+                          stream: musicBloc.noiseStream,
+                          builder: (context, snapshot) {
+                            return LineChart(
+                              LineChartData(
+                                gridData: const FlGridData(show: false),
+                                titlesData: const FlTitlesData(show: false),
+                                borderData: FlBorderData(show: false),
+                                minX: 0,
+                                maxX: musicBloc.noiseData.length.toDouble(),
+                                minY: 0,
+                                maxY: 100,
+                                lineBarsData: [
+                                  LineChartBarData(
+                                    spots:
+                                        musicBloc.noiseData.asMap().entries.map(
+                                          (entry) {
+                                            return FlSpot(
+                                              entry.key.toDouble(),
+                                              entry.value,
+                                            );
+                                          },
+                                        ).toList(),
+                                    isCurved: true,
+                                    gradient: LinearGradient(
+                                      colors: [Colors.blue, Colors.green],
+                                    ),
+                                    barWidth: 3,
+                                    dotData: const FlDotData(show: false),
+                                    isStrokeCapRound: true,
+                                    belowBarData: BarAreaData(
+                                      show: true,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.green.withOpacity(0.2),
+                                          Colors.blue.withOpacity(0.1),
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  LineChartBarData(
+                                    spots:
+                                        musicBloc.noiseData
+                                            .asMap()
+                                            .entries
+                                            .where((entry) => entry.value >= 90)
+                                            .map(
+                                              (entry) => FlSpot(
+                                                entry.key.toDouble(),
+                                                entry.value,
+                                              ),
+                                            )
+                                            .toList(),
+                                    isCurved: true,
+                                    color: Colors.red,
+                                    barWidth: 3,
+                                    dotData: const FlDotData(show: false),
+                                    isStrokeCapRound: true,
+                                    belowBarData: BarAreaData(
+                                      show: true,
+                                      color: Colors.red.withOpacity(0.2),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              LineChartBarData(
-                                spots:
-                                    musicBloc.noiseData
-                                        .asMap()
-                                        .entries
-                                        .where((entry) => entry.value >= 90)
-                                        .map(
-                                          (entry) => FlSpot(
-                                            entry.key.toDouble(),
-                                            entry.value,
-                                          ),
-                                        )
-                                        .toList(),
-                                isCurved: true,
-                                color: Colors.red,
-                                barWidth: 3,
-                                dotData: const FlDotData(show: false),
-                                isStrokeCapRound: true,
-                                belowBarData: BarAreaData(
-                                  show: true,
-                                  color: Colors.red.withOpacity(0.2),
-                                ),
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                       ),
 

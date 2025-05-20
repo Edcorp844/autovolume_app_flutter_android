@@ -43,6 +43,9 @@ class MusicBloc extends Bloc<MusicEvent, MusicState> {
   double _autoVolumeThreshold = 0.5;
   List<double> _noiseData = [];
   StreamSubscription<NoiseReading>? _noiseSubscription;
+  final _noiseStreamController = StreamController<double>.broadcast();
+
+  Stream<double> get noiseStream => _noiseStreamController.stream;
 
   //public getters
   double get currentNoiseLevel => _noiseLevel;
@@ -170,7 +173,7 @@ class MusicBloc extends Bloc<MusicEvent, MusicState> {
     }
   }
 
-  void _startNoiseMonitoring() {
+  /* void _startNoiseMonitoring() {
     _noiseSubscription = _noiseMeter.noise.listen((noiseReading) {
       _noiseLevel = noiseReading.meanDecibel;
       _noiseData.add(_noiseLevel);
@@ -179,6 +182,20 @@ class MusicBloc extends Bloc<MusicEvent, MusicState> {
       }
     });
     _adjustVolume();
+  }*/
+
+  void _startNoiseMonitoring() {
+    _noiseSubscription = _noiseMeter.noise.listen((noiseReading) {
+      _noiseLevel = noiseReading.meanDecibel;
+      _noiseData.add(_noiseLevel);
+
+      if (_noiseData.length > 50) {
+        _noiseData.removeAt(0);
+      }
+
+      _adjustVolume();
+      _noiseStreamController.add(_noiseLevel);
+    });
   }
 
   void _stopNoiseMonitoring() {
